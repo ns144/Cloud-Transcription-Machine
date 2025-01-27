@@ -122,7 +122,7 @@ resource "aws_instance" "transcription_server_ami" {
 
   }
   # Security Group allowing traffic from everywhere (0.0.0.0/0)
-  vpc_security_group_ids = [aws_security_group.allow_all.id]
+  vpc_security_group_ids = [aws_security_group.allow_all_ami.id]
   key_name = "ssh_access"
 
   # IAM Instance Profile for CloudWatch Logs and S3
@@ -133,8 +133,8 @@ resource "aws_instance" "transcription_server_ami" {
   #}
 }
 
-resource "aws_security_group" "allow_all" {
-  name        = "allow_all"
+resource "aws_security_group" "allow_all_ami" {
+  name        = "allow_all_ami"
   description = "Allow all inbound and outbound traffic"
 
   ingress {
