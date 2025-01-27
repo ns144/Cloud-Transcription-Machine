@@ -1,6 +1,6 @@
 # IAM Role for EC2 instance
-resource "aws_iam_role" "access_s3_and_logs" {
-  name = "access_s3_and_logs_role"
+resource "aws_iam_role" "access_s3_and_logs_ami" {
+  name = "access_s3_and_logs_ami_role"
   
   assume_role_policy = <<EOF
 {
@@ -19,14 +19,14 @@ EOF
 }
 
 # Attach AmazonS3FullAccess policy to the role
-resource "aws_iam_role_policy_attachment" "s3_access" {
+resource "aws_iam_role_policy_attachment" "s3_access_ami" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-  role       = aws_iam_role.access_s3_and_logs.name
+  role       = aws_iam_role.access_s3_and_logs_ami.name
 }
 
 # Additional policy for accessing Secrets Manager
-resource "aws_iam_policy" "secrets_manager_policy" {
-  name        = "secrets_manager_policy"
+resource "aws_iam_policy" "secrets_manager_policy_ami" {
+  name        = "secrets_manager_policy_ami"
   description = "Policy for accessing AWS Secrets Manager"
 
   policy = <<EOF
@@ -45,14 +45,14 @@ resource "aws_iam_policy" "secrets_manager_policy" {
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "secrets_manager_access" {
-  policy_arn = aws_iam_policy.secrets_manager_policy.arn
-  role       = aws_iam_role.access_s3_and_logs.name
+resource "aws_iam_role_policy_attachment" "secrets_manager_access_ami" {
+  policy_arn = aws_iam_policy.secrets_manager_policy_ami.arn
+  role       = aws_iam_role.access_s3_and_logs_ami.name
 }
 
 # Policy for CloudWatch Logs
-resource "aws_iam_policy" "cloudwatch_logs_policy" {
-  name        = "cloudwatch_logs_policy"
+resource "aws_iam_policy" "cloudwatch_logs_policy_ami" {
+  name        = "cloudwatch_logs_policy_ami"
   description = "Policy for EC2 to write logs and metrics to CloudWatch"
 
   policy = <<EOF
@@ -85,18 +85,18 @@ EOF
 }
 
 
-resource "aws_iam_role_policy_attachment" "cloudwatch_logs_access" {
-  policy_arn = aws_iam_policy.cloudwatch_logs_policy.arn
-  role       = aws_iam_role.access_s3_and_logs.name
+resource "aws_iam_role_policy_attachment" "cloudwatch_logs_access_ami" {
+  policy_arn = aws_iam_policy.cloudwatch_logs_policy_ami.arn
+  role       = aws_iam_role.access_s3_and_logs_ami.name
 }
 
 # IAM Instance Profile for the EC2 instance
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2_s3_and_logs_profile"
-  role = aws_iam_role.access_s3_and_logs.name
+resource "aws_iam_instance_profile" "ec2_profile_ami" {
+  name = "ec2_s3_and_logs_profile_ami"
+  role = aws_iam_role.access_s3_and_logs_ami.name
 }
 
-resource "aws_instance" "transcription_server" {
+resource "aws_instance" "transcription_server_ami" {
 # AMI Ubuntu Server 22.04 LTS X86 
 #  ami           = "ami-06dd92ecc74fdfb36"
   # Nividia AMI
@@ -126,7 +126,7 @@ resource "aws_instance" "transcription_server" {
   key_name = "ssh_access"
 
   # IAM Instance Profile for CloudWatch Logs and S3
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile_ami.name
 
   #root_block_device {
   #  volume_size = 128  # New root volume size in GB
