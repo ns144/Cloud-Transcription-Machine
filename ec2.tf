@@ -1,4 +1,4 @@
-# IAM Role for EC2 instance
+/*# IAM Role for EC2 instance
 resource "aws_iam_role" "access_s3_and_logs" {
   name = "access_s3_and_logs_role"
   
@@ -95,8 +95,8 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2_s3_and_logs_profile"
   role = aws_iam_role.access_s3_and_logs.name
 }
-
-resource "aws_instance" "transcription_server" {
+*/
+resource "aws_instance" "transcription_server_ami" {
 # AMI Ubuntu Server 22.04 LTS X86 
 #  ami           = "ami-06dd92ecc74fdfb36"
   # Nividia AMI
