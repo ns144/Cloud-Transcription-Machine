@@ -118,7 +118,7 @@ resource "aws_instance" "transcription_server" {
 
   tags = {
 
-    Name = "Transcription Server"
+    Name = "Transcription Server For AMI"
 
   }
   # Security Group allowing traffic from everywhere (0.0.0.0/0)
