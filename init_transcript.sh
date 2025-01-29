@@ -73,6 +73,7 @@ sudo tee /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent.json > /de
         }
     },
     "metrics": {
+        "aggregation_dimensions" : [["AutoScalingGroupName"],[]],
         "metrics_collected": {
             "nvidia_gpu": {
                 "measurement": [
@@ -88,6 +89,9 @@ sudo tee /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent.json > /de
                 "metrics_collection_interval": 10
             }
         }
+    },
+    "append_dimensions": {
+      "AutoScalingGroupName": "ton-texter-transcription-servers"
     }
 }
 EOL
