@@ -21,7 +21,7 @@ resource "aws_lambda_function" "build_image_lambda" {
 
   function_name = "buildAMIandLaunchTemplate"
 
-  role = aws_iam_role.lambda_role.arn
+  role = aws_iam_role.build_lambda_role.arn
 
   handler = "build_image_lambda.lambda_handler"
 
@@ -39,7 +39,7 @@ resource "aws_lambda_function" "build_image_lambda" {
 }
 
 
-resource "aws_iam_role" "lambda_role" {
+resource "aws_iam_role" "build_lambda_role" {
 
   name = "lambda-role"
 
@@ -98,13 +98,13 @@ EOF
 
 # Attach Policy to Role
 resource "aws_iam_role_policy_attachment" "attach_ec2_policy" {
-  role       = aws_iam_role.lambda_role.name
+  role       = aws_iam_role.build_lambda_role.name
   policy_arn = aws_iam_policy.ec2_policy.arn
 }
 
 # Attach AWS Lambda Basic Execution Role
 resource "aws_iam_role_policy_attachment" "attach_basic_execution" {
-  role       = aws_iam_role.lambda_role.name
+  role       = aws_iam_role.build_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
