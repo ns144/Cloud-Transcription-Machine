@@ -1,3 +1,9 @@
+variable "transcription_api_key" {
+  description = "TRANSCRIPTION_SERVICE_API_KEY"
+  type        = string
+}
+
+
 data "archive_file" "lambda_package" {
 
   type = "zip"
