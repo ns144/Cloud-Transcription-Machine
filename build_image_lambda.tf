@@ -41,7 +41,7 @@ resource "aws_lambda_function" "build_image_lambda" {
 
 resource "aws_iam_role" "build_lambda_role" {
 
-  name = "lambda-role"
+  name = "build-lambda-role"
 
 
 
