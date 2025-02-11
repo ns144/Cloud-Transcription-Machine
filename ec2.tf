@@ -90,6 +90,38 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_logs_access_ami" {
   role       = aws_iam_role.access_s3_and_logs_ami.name
 }
 
+resource "aws_iam_policy" "ec2_ami_policy" {
+  name        = "EC2_AMI_launch_template_policy"
+  description = "Allows EC2 to create AMIs and Launch Templates"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateImage",
+        "ec2:DescribeImages",
+        "ec2:DescribeInstances",
+        "ec2:CreateLaunchTemplate",
+        "ec2:DescribeLaunchTemplates",
+        "ec2:DescribeLaunchTemplateVersions",
+        "ec2:GetLaunchTemplateData"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "attach_ami_policy" {
+  policy_arn = aws_iam_policy.ec2_ami_policy.arn
+  role       = aws_iam_role.access_s3_and_logs_ami.name
+}
+
+
 # IAM Instance Profile for the EC2 instance
 resource "aws_iam_instance_profile" "ec2_profile_ami" {
   name = "ec2_s3_and_logs_profile_ami"

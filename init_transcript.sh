@@ -128,4 +128,5 @@ sudo cat >/etc/cron.d/startup_script <<EOL
 @reboot root /home/ubuntu/startup.sh
 EOL
 sudo cat /etc/cron.d/startup_script
+sudo python3 run_tests.py
 sudo poweroff
