@@ -85,6 +85,7 @@ resource "aws_iam_policy" "ec2_policy" {
         "ec2:CreateImage",
         "ec2:DescribeImages",
         "ec2:CreateLaunchTemplate",
+        "ec2:CreateLaunchTemplateVersion",
         "ec2:DescribeInstances",
         "ec2:GetLaunchTemplateData"
       ],
