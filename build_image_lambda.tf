@@ -23,7 +23,7 @@ resource "aws_lambda_function" "build_image_lambda" {
 
   role = aws_iam_role.build_lambda_role.arn
 
-  handler = "build_image_lambda.lambda_handler"
+  handler = "build_image.lambda_handler"
 
   runtime = "python3.10"
 
@@ -111,34 +111,130 @@ resource "aws_iam_role_policy_attachment" "attach_basic_execution" {
 
 
 # API Gateway
-resource "aws_apigatewayv2_api" "lambda_api" {
-  name          = "LambdaAPI"
-  protocol_type = "HTTP"
+resource "aws_api_gateway_rest_api" "build_image_gateway" {
+
+  name = "build_image-api"
+
+  description = "API Endpoint for the creation of a Launch Template"
+
+
+
+  endpoint_configuration {
+
+    types = ["REGIONAL"]
+
+  }
+
+}
+resource "aws_api_gateway_resource" "build_root" {
+
+  rest_api_id = aws_api_gateway_rest_api.build_image_gateway.id
+
+  parent_id = aws_api_gateway_rest_api.build_image_gateway.root_resource_id
+
+  path_part = "build_image"
+
 }
 
-# API Gateway Integration with Lambda
-resource "aws_apigatewayv2_integration" "lambda_integration" {
-  api_id           = aws_apigatewayv2_api.lambda_api.id
-  integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.build_image_lambda.invoke_arn
+resource "aws_api_gateway_method" "build_proxy" {
+
+  rest_api_id = aws_api_gateway_rest_api.build_image_gateway.id
+
+  resource_id = aws_api_gateway_resource.build_root.id
+
+  http_method = "GET"
+  
+  authorization = "NONE"
+
 }
 
-# API Gateway Route
-resource "aws_apigatewayv2_route" "lambda_route" {
-  api_id    = aws_apigatewayv2_api.lambda_api.id
-  route_key = "POST /build-image"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+resource "aws_api_gateway_integration" "build_lambda_integration" {
+
+  rest_api_id = aws_api_gateway_rest_api.build_image_gateway.id
+
+  resource_id = aws_api_gateway_resource.build_root.id
+
+  http_method = aws_api_gateway_method.build_proxy.http_method
+
+  integration_http_method = "POST"
+
+  type = "AWS_PROXY"
+  uri = aws_lambda_function.build_image_lambda.invoke_arn
+
 }
 
-# API Gateway Stage
-resource "aws_apigatewayv2_stage" "lambda_stage" {
-  api_id      = aws_apigatewayv2_api.lambda_api.id
-  name        = "dev"
-  auto_deploy = true
+resource "aws_api_gateway_method_response" "build_proxy" {
+
+  rest_api_id = aws_api_gateway_rest_api.build_image_gateway.id
+
+  resource_id = aws_api_gateway_resource.build_root.id
+
+  http_method = aws_api_gateway_method.build_proxy.http_method
+
+  status_code = "200"
+
+    //cors section
+
+  response_parameters = {
+
+    "method.response.header.Access-Control-Allow-Headers" = true,
+
+    "method.response.header.Access-Control-Allow-Methods" = true,
+
+    "method.response.header.Access-Control-Allow-Origin" = true
+
+  }
+
 }
 
-# Lambda Permission to be Invoked by API Gateway
-resource "aws_lambda_permission" "apigw_lambda" {
+resource "aws_api_gateway_integration_response" "build_proxy" {
+
+  rest_api_id = aws_api_gateway_rest_api.build_image_gateway.id
+
+  resource_id = aws_api_gateway_resource.build_root.id
+
+  http_method = aws_api_gateway_method.build_proxy.http_method
+
+  status_code = aws_api_gateway_method_response.build_proxy.status_code
+
+  //cors
+
+  response_parameters = {
+
+    "method.response.header.Access-Control-Allow-Headers" =  "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+
+  }
+
+  depends_on = [
+
+    aws_api_gateway_method.build_proxy,
+
+    aws_api_gateway_integration.build_lambda_integration
+
+  ]
+
+}
+
+resource "aws_api_gateway_deployment" "build_deployment" {
+  depends_on = [
+    aws_api_gateway_integration.build_lambda_integration,
+  ]
+
+  rest_api_id = aws_api_gateway_rest_api.build_image_gateway.id
+}
+
+resource "aws_api_gateway_stage" "build_dev" {
+  deployment_id = aws_api_gateway_deployment.build_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.build_image_gateway.id
+  stage_name    = "dev"
+}
+
+
+resource "aws_lambda_permission" "build_apigw_lambda" {
 
   statement_id = "AllowExecutionFromAPIGateway"
 
@@ -148,9 +244,6 @@ resource "aws_lambda_permission" "apigw_lambda" {
 
   principal = "apigateway.amazonaws.com"
 
-}
+  source_arn = "${aws_api_gateway_rest_api.build_image_gateway.execution_arn}/*/*/*"
 
-# Output API Gateway Endpoint
-output "api_endpoint" {
-  value = "${aws_apigatewayv2_stage.lambda_stage.invoke_url}/build-image"
 }
