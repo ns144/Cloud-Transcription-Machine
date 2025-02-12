@@ -56,7 +56,7 @@ def lambda_handler(event, context):
                         {
                             'DeviceName': '/dev/sda1',  # Root volume
                             'Ebs': {
-                                'VolumeSize': 45,
+                                'VolumeSize': 50,
                                 'VolumeType': 'gp3',
                                 'Iops': 16000,  # 16K IOPS
                                 'Throughput': 1000,  # 1000 MB/s
@@ -85,7 +85,7 @@ def lambda_handler(event, context):
                             {
                                 'DeviceName': '/dev/sda1',  # Root volume
                                 'Ebs': {
-                                    'VolumeSize': 45,
+                                    'VolumeSize': 50,
                                     'VolumeType': 'gp3',
                                     'Iops': 16000,  # 16K IOPS
                                     'Throughput': 1000,  # 1000 MB/s
