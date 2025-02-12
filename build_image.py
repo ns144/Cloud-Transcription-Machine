@@ -72,7 +72,7 @@ def lambda_handler(event, context):
 
         except ec2_client.exceptions.ClientError as error:
             # Step 2: If the template already exists, add a new version
-            if "already exists" in str(error):
+            if "already in use" in str(error):
                 print("Launch template already exists. Creating a new version...")
                 template_version_response = ec2_client.create_launch_template_version(
                     LaunchTemplateName=launch_template_name,
