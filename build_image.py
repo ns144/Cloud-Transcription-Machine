@@ -26,12 +26,31 @@ def lambda_handler(event, context):
         return {'statusCode': 401, 'body': json.dumps(response)}
 
     try:
+        ec2_client.stop_instances(InstanceIds=INSTANCE_ID)
+        print('Stopping instance: ' + str(INSTANCE_ID))
+        # Wait for the instance to complete shutdown
+        waiter = ec2_client.get_waiter('instance_stopped')
+        waiter.wait(
+            InstanceIds=[INSTANCE_ID],
+            WaiterConfig={
+                'Delay': 20,  # Polling interval (in seconds)
+                'MaxAttempts': 40  # Maximum number of polling attempts
+            }
+        )
+        print(f"Instance {INSTANCE_ID} is now fully stopped.")
+
+    except Exception as e:
+        response = f"Failed to stop instance {INSTANCE_ID}: {e}"
+        print(response)
+        return {'statusCode': 401, 'body': json.dumps(response)}
+
+    try:
         # Step 1: Create AMI
         ami_name = f"Transcription-Server-AMI-{int(time.time())}"
         ami_response = ec2_client.create_image(
             InstanceId=INSTANCE_ID,
             Name=ami_name,
-            NoReboot=True
+            NoReboot=False
         )
         ami_id = ami_response['ImageId']
         print(f"AMI Creation Initiated: {ami_id}")
