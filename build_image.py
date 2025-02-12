@@ -41,42 +41,86 @@ def lambda_handler(event, context):
         waiter.wait(ImageIds=[ami_id])
         print(f"AMI is now available: {ami_id}")
 
-        # Step 3: Create a Launch Template using the new AMI
         launch_template_name = "ton-texter-transcription-server"
-        template_response = ec2_client.create_launch_template(
-            LaunchTemplateName=launch_template_name,
-            LaunchTemplateData={
-                'ImageId': ami_id,
-                'InstanceType': 'g4dn.xlarge',
-                'KeyName': 'ssh_access',
-                'SecurityGroupIds': ['sg-0b37fa617eabd748d'],
-                'BlockDeviceMappings': [
-                    {
-                        'DeviceName': '/dev/sda1',  # Root volume
-                        'Ebs': {
-                            'VolumeSize': 45,
-                            'VolumeType': 'gp3',
-                            'Iops': 16000,  # 16K IOPS
-                            'Throughput': 1000,  # 1000 MB/s
-                            'DeleteOnTermination': True
+
+        try:
+            # Step 3: Create a Launch Template using the new AMI
+            template_response = ec2_client.create_launch_template(
+                LaunchTemplateName=launch_template_name,
+                LaunchTemplateData={
+                    'ImageId': ami_id,
+                    'InstanceType': 'g4dn.xlarge',
+                    'KeyName': 'ssh_access',
+                    'SecurityGroupIds': ['sg-0b37fa617eabd748d'],
+                    'BlockDeviceMappings': [
+                        {
+                            'DeviceName': '/dev/sda1',  # Root volume
+                            'Ebs': {
+                                'VolumeSize': 45,
+                                'VolumeType': 'gp3',
+                                'Iops': 16000,  # 16K IOPS
+                                'Throughput': 1000,  # 1000 MB/s
+                                'DeleteOnTermination': True
+                            }
                         }
+                    ]
+                }
+            )
+
+            template_id = template_response['LaunchTemplate']['LaunchTemplateId']
+            print(f"Launch Template Created: {template_id}")
+
+        except ec2_client.exceptions.ClientError as error:
+            # Step 2: If the template already exists, add a new version
+            if "already exists" in str(error):
+                print("Launch template already exists. Creating a new version...")
+                template_version_response = ec2_client.create_launch_template_version(
+                    LaunchTemplateName=launch_template_name,
+                    LaunchTemplateData={
+                        'ImageId': ami_id,
+                        'InstanceType': 'g4dn.xlarge',
+                        'KeyName': 'ssh_access',
+                        'SecurityGroupIds': ['sg-0b37fa617eabd748d'],
+                        'BlockDeviceMappings': [
+                            {
+                                'DeviceName': '/dev/sda1',  # Root volume
+                                'Ebs': {
+                                    'VolumeSize': 45,
+                                    'VolumeType': 'gp3',
+                                    'Iops': 16000,  # 16K IOPS
+                                    'Throughput': 1000,  # 1000 MB/s
+                                    'DeleteOnTermination': True
+                                }
+                            }
+                        ]
                     }
-                ]
-            }
-        )
+                )
+                latest_version_number = template_version_response['LaunchTemplateVersion']['VersionNumber']
+                print(f"New version created for launch template '{launch_template_name}': Version {latest_version_number}")
 
-        template_id = template_response['LaunchTemplate']['LaunchTemplateId']
-        print(f"Launch Template Created: {template_id}")
+                # Set the default version to the latest
+                ec2_client.modify_launch_template(
+                    LaunchTemplateName=launch_template_name,
+                    DefaultVersion=str(latest_version_number)
+                )
 
-        # Set the default version to the latest
-        latest_version_number = template_response['LaunchTemplate']['LatestVersionNumber']
+                print(f"Launch template '{launch_template_name}' default version set to: {latest_version_number}")
+            else:
+                # If the error is not related to the template already existing, re-raise it
+                raise
 
-        ec2_client.modify_launch_template(
-            LaunchTemplateName=launch_template_name,
-            DefaultVersion=str(latest_version_number)
-        )
+            def terminate_instance(instance_id):
+                try:
+                    response = ec2_client.terminate_instances(InstanceIds=[instance_id])
+                    print(f"Terminating instance {instance_id}...")
+                    for instance in response['TerminatingInstances']:
+                        print(f"Instance {instance['InstanceId']} is now in state: {instance['CurrentState']['Name']}")
+                except Exception as e:
+                    print(f"An error occurred while terminating the instance: {e}")
 
-        print(f"Launch template '{launch_template_name}' default version set to: {latest_version_number}")
+            # Example usage
+            print(f"Terminating instance with instance id: {INSTANCE_ID}")
+            terminate_instance(INSTANCE_ID)
 
         return {
             "statusCode": 200,
