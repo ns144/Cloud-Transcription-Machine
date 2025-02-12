@@ -88,7 +88,8 @@ resource "aws_iam_policy" "ec2_policy" {
         "ec2:CreateLaunchTemplateVersion",
         "ec2:ModifyLaunchTemplate",
         "ec2:DescribeInstances",
-        "ec2:GetLaunchTemplateData"
+        "ec2:GetLaunchTemplateData",
+        "ec2:TerminateInstances"
       ],
       "Resource": "*"
     }

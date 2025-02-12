@@ -124,7 +124,7 @@ def lambda_handler(event, context):
 
         return {
             "statusCode": 200,
-            "body": f"Launch Template Created: {template_id} with AMI: {ami_id}"
+            "body": f"Launch Template Created"
         }
 
     except Exception as e:
