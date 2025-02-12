@@ -42,7 +42,7 @@ def lambda_handler(event, context):
         print(f"AMI is now available: {ami_id}")
 
         # Step 3: Create a Launch Template using the new AMI
-        launch_template_name = "Transcription-Server-Template"
+        launch_template_name = "ton-texter-transcription-server"
         template_response = ec2_client.create_launch_template(
             LaunchTemplateName=launch_template_name,
             LaunchTemplateData={
@@ -67,6 +67,16 @@ def lambda_handler(event, context):
 
         template_id = template_response['LaunchTemplate']['LaunchTemplateId']
         print(f"Launch Template Created: {template_id}")
+
+        # Set the default version to the latest
+        latest_version_number = template_response['LaunchTemplate']['LatestVersionNumber']
+
+        ec2_client.modify_launch_template(
+            LaunchTemplateName=launch_template_name,
+            DefaultVersion=str(latest_version_number)
+        )
+
+        print(f"Launch template '{launch_template_name}' default version set to: {latest_version_number}")
 
         return {
             "statusCode": 200,
