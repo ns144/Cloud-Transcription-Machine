@@ -26,7 +26,7 @@ def lambda_handler(event, context):
         return {'statusCode': 401, 'body': json.dumps(response)}
 
     try:
-        ec2_client.stop_instances(InstanceIds=INSTANCE_ID)
+        ec2_client.stop_instances(InstanceIds=[INSTANCE_ID])
         print('Stopping instance: ' + str(INSTANCE_ID))
         # Wait for the instance to complete shutdown
         waiter = ec2_client.get_waiter('instance_stopped')
