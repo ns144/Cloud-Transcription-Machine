@@ -92,7 +92,10 @@ def lambda_handler(event, context):
                                     'DeleteOnTermination': True
                                 }
                             }
-                        ]
+                        ],
+                        'IamInstanceProfile': {
+                            'Arn': 'arn:aws:iam::117572128031:instance-profile/ec2_s3_and_logs_profile_ami'
+                        }
                     }
                 )
                 latest_version_number = template_version_response['LaunchTemplateVersion']['VersionNumber']
