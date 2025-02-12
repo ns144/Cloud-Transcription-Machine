@@ -35,7 +35,7 @@ resource "aws_lambda_function" "build_image_lambda" {
     }
   }
 
-  timeout = 1200
+  timeout = 900
 }
 
 
