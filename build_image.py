@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         ami_response = ec2_client.create_image(
             InstanceId=INSTANCE_ID,
             Name=ami_name,
-            NoReboot=False
+            NoReboot=True
         )
         ami_id = ami_response['ImageId']
         print(f"AMI Creation Initiated: {ami_id}")
