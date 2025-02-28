@@ -29,6 +29,8 @@ If you want to test our application, proceed as follows:
 
 6. Download your transcriptions in DOCX, SRT, and TXT formats.
 
+## Related Repositories
+
 | Service                                                      | Description                                                  | Scope                 |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | --------------------- |
 | [Ton-Texter](https://github.com/ns144/Cloud-Transcription-Service) | The Next.js application.          | Next.js |
